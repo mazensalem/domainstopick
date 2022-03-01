@@ -12,7 +12,11 @@ export default function Signin({ providers, csrfToken }) {
             </button>
           </div>
         ) : (
-          <form method="post" action="/api/auth/signin/email">
+          <form
+            key={provider.name}
+            method="post"
+            action="/api/auth/signin/email"
+          >
             <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
             <label>
               Email address

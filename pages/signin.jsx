@@ -1,7 +1,12 @@
 import React from "react";
-import { getCsrfToken, getProviders, signIn } from "next-auth/react";
+import {
+  getCsrfToken,
+  getProviders,
+  signIn,
+  getSession,
+} from "next-auth/react";
 
-export default function Signin({ providers, csrfToken }) {
+export default function SignIn({ providers, csrfToken }) {
   return (
     <>
       {Object.values(providers).map((provider) =>
@@ -31,6 +36,15 @@ export default function Signin({ providers, csrfToken }) {
 }
 
 export async function getServerSideProps(context) {
+  const { req, res } = context;
+  const session = await getSession({ req });
+  if (session && res) {
+    res.writeHead(302, {
+      Location: context.query.callbackUrl || "/",
+    });
+    res.end();
+    return { props: {} };
+  }
   const providers = await getProviders();
   const csrfToken = await getCsrfToken(context);
   return {

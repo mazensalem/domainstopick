@@ -9,10 +9,9 @@ export default NextAuth({
   secret: "halowiwoieurp",
   pages: {
     signIn: "/signin",
-    // signOut: "/auth/signout",
     // error: "/auth/error", // Error code passed in query string as ?error=
-    // verifyRequest: "/auth/verify-request", // (used for check email message)
-    // newUser: "/auth/new-user", // New users will be directed here on first sign in (leave the property out if not of interest)
+    verifyRequest: "/verifyemail", // (used for check email message)
+    newUser: "/signup", // New users will be directed here on first sign in (leave the property out if not of interest)
   },
   providers: [
     GoogleProvider({

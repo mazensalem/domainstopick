@@ -68,11 +68,16 @@ export default function signup({ img, check, ubio, uname, email, img_id }) {
       }
     }
     if (body) {
-      const rdata = await fetch("/api/sendimage", {
-        method: "POST",
-        body,
-      });
-      const data = await rdata.json();
+      let data = {};
+      try {
+        const rdata = await fetch("/api/sendimage", {
+          method: "POST",
+          body: JSON.stringify({ image: body, folder: "usersimages" }),
+        });
+        data = await rdata.json();
+      } catch (e) {
+        seterror("there is an error on your image");
+      }
       if (data.secure_url) {
         result.image_url = data.secure_url;
         result.image_public_id = data.public_id;
@@ -89,6 +94,7 @@ export default function signup({ img, check, ubio, uname, email, img_id }) {
 
   const send = async (e) => {
     e.preventDefault();
+    seterror("");
     if (!name) {
       setisloading("");
       seterror("you should enter your name");

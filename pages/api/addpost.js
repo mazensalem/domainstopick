@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import client from "../../lib/mongodb";
 import { getSession } from "next-auth/react";
 

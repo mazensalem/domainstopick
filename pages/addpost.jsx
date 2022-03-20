@@ -6,10 +6,14 @@ export default function addpost() {
   const [title, settitle] = useState("");
   const [text, settext] = useState("");
   const [image, setimage] = useState("");
+  const [imageurl, setimageurl] = useState("");
+  const [errors, seterrors] = useState("");
+  const [loading, setloading] = useState("");
 
   const imageupload = async (e) => {
     if (e.target.files[0]) {
-      setimage(e.target.files[0]);
+      setimage(e.target.files[0] || "");
+      setimageurl(URL.createObjectURL(e.target.files[0] || ""));
     }
   };
 
@@ -28,21 +32,29 @@ export default function addpost() {
   };
 
   const sendimage = async () => {
-    const result = { image_url: "" };
+    const result = { image_url: "", image_public_id: "" };
     if (image) {
       const body = await readimage(image);
-      const rdata = await fetch("/api/sendimage", {
-        method: "POST",
-        body,
-      });
-      const data = await rdata.json();
+      let data = {};
+      try {
+        const rdata = await fetch("/api/sendimage", {
+          method: "POST",
+          body: JSON.stringify({ image: body, folder: "postsimages" }),
+        });
+        data = await rdata.json();
+      } catch (error) {
+        setloading("");
+        seterrors("there is an error on uploading your image");
+      }
       if (data.secure_url) {
         result.image_url = data.secure_url;
+        result.image_public_id = data.public_id;
       } else {
-        // seterror(
-        //   data.error ||
-        //     "there is an error in uploading your image please contact our support"
-        // );
+        setloading("");
+        seterrors(
+          data.error ||
+            "there is an error in uploading your image please contact our support"
+        );
       }
     }
     return result;
@@ -50,15 +62,26 @@ export default function addpost() {
 
   const send = async (e) => {
     e.preventDefault();
+    setloading("loading");
+    seterrors("");
     if (!title) {
-      // seterror("you should enter your name");
+      setloading("");
+      seterrors("you should enter a title");
       return;
     }
-    const { image_url } = await sendimage();
+    if (!text) {
+      setloading("");
+      seterrors("you should enter a description");
+      return;
+    }
+    const { image_url, image_public_id } = await sendimage();
     const post = {
       title,
       text,
       image_url,
+      image_public_id,
+      likes: [],
+      comments: [],
     };
     const resbondobj = await fetch("/api/addpost", {
       method: "POST",
@@ -68,13 +91,17 @@ export default function addpost() {
     if (result.content == "done") {
       Router.push("/profile");
     } else {
-      // seterror(result.error);
+      setloading("");
+      seterrors(result.error || "there is an error on uploading your post");
     }
   };
 
   return (
     <div>
       <form onSubmit={send}>
+        {errors}
+        {loading}
+        <img src={imageurl} />
         <input
           type="text"
           placeholder="enter the tilte"
@@ -82,7 +109,15 @@ export default function addpost() {
           onChange={(e) => settitle(e.target.value)}
         />
         <textarea value={text} onChange={(e) => settext(e.target.value)} />
-        <input type="file" />
+        <input type="file" onChange={imageupload} />
+        <input
+          type="button"
+          value="delete image"
+          onClick={() => {
+            setimageurl("");
+            setimage("");
+          }}
+        />
         <input type="submit" />
       </form>
     </div>

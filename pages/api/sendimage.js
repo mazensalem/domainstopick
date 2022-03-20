@@ -7,8 +7,11 @@ export default async (req, res) => {
     api_secret: process.env.CLOUDINARY_API_SECRET,
     secure: true,
   });
-  const resbond = await cloudinary.v2.uploader.upload(req.body, {
-    folder: "usersimages",
-  });
+  const resbond = await cloudinary.v2.uploader.upload(
+    JSON.parse(req.body).image,
+    {
+      folder: JSON.parse(req.body).folder,
+    }
+  );
   res.json(resbond);
 };
